@@ -146,6 +146,15 @@
                         <tr>
                             <td>Dewan Koinonia GBKP PANTAI BARAT</td>
                         </tr>
+                        <tr>
+                        <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                        <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td>Pt. Patuh Perangin-angin</td>
+                        </tr>
                     </thead>
                 </table>
             </div>
@@ -161,6 +170,15 @@
                         <tr>
                             <td>Petugas Administrasi</td>
                         </tr>
+                        <tr>
+                        <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                        <td>&nbsp;</td>
+                        </tr>
+                        <tr>
+                            <td>Cakradu Natalta Sembiring</td>
+                        </tr>
                     </thead>
                 </table>
             </div>
@@ -169,6 +187,8 @@
         <section class="text-center text-lg">
             <p>Disetujui,</p>
             <p>Pendeta GBKP PANTAI BARAT</p>
+            <br> <br>
+            <p>Pdt. Magdalena Sari Novita Br.S.Depari, S.Th.</p>
         </section>
     </main>
 

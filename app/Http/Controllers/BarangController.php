@@ -12,28 +12,25 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Storage;
+use Endroid\QrCode\Encoding\Encoding;
+use Endroid\QrCode\Writer\PngWriter;
+use Endroid\QrCode\Builder\Builder;
+use Endroid\QrCode\ErrorCorrectionLevel;
+
 
 class BarangController extends Controller
-{
-    
+{ 
     public function index(Request $request)
         {
-            $sortColumn = $request->input('sort', 'nama_barang'); // Default sorting by 'nama_barang'
-            $sortDirection = $request->input('direction', 'asc'); // Default direction is 'asc'
-        
-            $data = Barang::orderBy($sortColumn, $sortDirection)->paginate(10);
-        
-            return view('admin.data-barang', compact('data', 'sortColumn', 'sortDirection'));
+            $data = Barang::all(); // Ambil semua data barang dari database
+            return view('admin.data-barang', compact('data')); // Kirim data ke view
         }
-    
 
     
     public function create()
     {
         //
     }
-
-    
 
     //  Function cek kode_barang
     public function generateCode($code)
@@ -43,41 +40,58 @@ class BarangController extends Controller
 
     public function store(Request $request)
     {
-        // Validate input
-        $request->validate([
-            'nama_barang' => 'required',
-            'kategori_barang' => 'required',
-            'status_barang' => 'required',
-            'kondisi_barang' => 'required',
-            'jumlah_barang' => 'required',
-            'gambar' => 'required|image|mimes:png,jpg,jpeg|max:35840'
-        ]);
+        // Validasi input
+    $validatedData = $request->validate([
+        'nama_barang' => 'required',
+        'kategori_barang' => 'required',
+        'status_barang' => 'required',
+        'kondisi_barang' => 'required',
+        'jumlah_barang' => 'required',
+        'gambar' => 'required|image|mimes:png,jpg,jpeg|max:35840'
+    ]);
 
-        // Save image file
-        $request->file('gambar')
-            ->storeAs('public/barang/gambar', $request->gambar->hashName());
+    // Simpan file gambar
+    $gambarPath = $request->file('gambar')->store('public/barang/gambar');
+    $gambarName = basename($gambarPath);
 
-        // Generate random code
-        $code = rand();
+    // Generate kode unik
+    do {
+        $kodeBarang = 'GBKP - ' . rand(1000, 9999);
+    } while (Barang::where('kode_barang', $kodeBarang)->exists());
 
-        // Cek code
-        if ($this->generateCode($code)) {
-            // Jika code ada yg sama dg data terdahulu, maka generate ulang
-            $code = rand();
-        }
+    // Simpan data barang ke database
+    $createdBarang = Barang::create([
+        'kode_barang' => $kodeBarang,
+        'nama_barang' => $validatedData['nama_barang'],
+        'kategori_barang' => $validatedData['kategori_barang'],
+        'status_barang' => $validatedData['status_barang'],
+        'kondisi_barang' => $validatedData['kondisi_barang'],
+        'jumlah_barang' => $validatedData['jumlah_barang'],
+        'gambar' => $gambarName,
+    ]);
 
-        // Jika semua aman, maka simpan data
-        Barang::create([
-            'kode_barang' => 'GBKP - ' . $code,
-            'nama_barang' => $request->nama_barang,
-            'kategori_barang' => $request->kategori_barang,
-            'status_barang' => $request->status_barang,
-            'kondisi_barang' => $request->kondisi_barang,
-            'jumlah_barang' => $request->jumlah_barang,
-            'gambar' => $request->gambar->hashName()
-        ]);
+    // Buat QR Code
+    $result = Builder::create()
+        ->writer(new PngWriter())
+        ->data(route('barangs.show', $createdBarang->id))
+        ->encoding(new Encoding('UTF-8'))
+        ->errorCorrectionLevel(Endroid\QrCode\ErrorCorrectionLevel::HIGH)
+        ->size(300) // Ukuran QR Code
+        ->margin(10) // Margin QR Code
+        ->build();
 
-        return redirect()->back()->with('success', 'Data berhasil disimpan!');
+    // Simpan QR Code ke file
+    $qrCodePath = 'public/barang/qr-codes/' . $createdBarang->id . '.png';
+    $filePath = storage_path('app/' . $qrCodePath);
+    $result->saveToFile($filePath);
+
+    // Update path QR Code di database
+    $createdBarang->update(['qr_code' => $qrCodePath]);
+
+    var_dump(class_exists('Endroid\QrCode\ErrorCorrectionLevel\ErrorCorrectionLevel'));
+
+    // Redirect dengan pesan sukses
+    return redirect()->back()->with('success', 'Data berhasil disimpan dan QR Code dibuat!');
     }
 
     public function printDataBarang()
@@ -151,9 +165,12 @@ class BarangController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Barang $barang)
+    public function show($id)
     {
-        //
+        $barang = Barang::findOrFail($id);
+
+        // Kirim data ke view
+        return view('barangs.show', compact('barang'));
     }
 
     /**

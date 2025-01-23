@@ -47,6 +47,7 @@
                 <th scope="col" class="px-6 py-3">Bukti Peminjam</th>
                 <th scope="col" class="px-6 py-3">Tanggal Mulai</th>
                 <th scope="col" class="px-6 py-3">Tanggal Selesai</th>
+                <th scope="col" class="px-6 py-3">Jumlah</th>
                 <th scope="col" class="px-6 py-3">Aksi</th>
             </tr>
         </thead>
@@ -96,6 +97,9 @@
                             @endphp
                             {{ date_format($dateSelesai, 'd M Y') }}
                         @endif
+                    </td>
+                    <td class="px-6 py-4">
+                        {{ $item->jumlah_pinjam }}
                     </td>
                         <td class="px-6 py-4">
                             <div class="flex gap-2 items-center">

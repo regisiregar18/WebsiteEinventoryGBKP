@@ -112,6 +112,13 @@
                         </td>
                         <td class="px-6 py-4">{{ $item->jumlah_barang }}</td>
                         <td class="px-6 py-4">{{ $item->created_at->format('d M Y') }}</td>
+                        <td class="px-6 py-4">
+                            @if($item->qr_code)
+                        <img src="{{ asset('storage/' . $item->qr_code) }}" alt="QR Code" width="100">
+                            @else
+                        <span class="text-gray-500">QR Code belum tersedia</span>
+                            @endif
+                        </td>
                         <td class="px-2 py-2">
                             <div class="flex flex-col justify-center items-center gap-2">
                                 <button wire:click='select({{ $item->id }})' data-modal-target="edit-barang" data-modal-toggle="edit-barang" class="flex justify-center items-center gap-1 bg-white border-2 border-blue-500 rounded-md py-1 px-5 text-blue-500">
@@ -294,13 +301,13 @@
                             </select>
                         </div>
                         <div class="mb-5">
-                            <label for="jumlah_barang"
-                                class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jumlah
-                                Barang</label>
-                            <input type="text" value="{{ $jumlahBarang }}" id="jumlah_barang" name="jumlah_barang"
-                                class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2.5 py-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                placeholder="0" required />
-                        </div>
+    <label for="jumlah_barang"
+        class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Jumlah Barang</label>
+    <input type="number" value="{{ $jumlahBarang }}" id="jumlah_barang" name="jumlah_barang"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full px-2.5 py-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
+        placeholder="0" min="0" step="1" required />
+</div>
+
                         <div class="mb-5">
                             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"
                                 for="gambar">Gambar</label>

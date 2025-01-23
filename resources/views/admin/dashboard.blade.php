@@ -27,7 +27,7 @@
         </div>
         <div class="xl:col-span-5 col-span-12">
     <div class="px-5 py-3 bg-white rounded-lg">
-        <h1 class="text-lg font-semibold mb-5">Riwayat Peminjaman Barang</h1>
+        <h1 class="text-lg font-semibold mb-5">History Barang</h1>
         <form method="GET" action="{{ route('filterPeminjaman') }}">
             <div class="flex gap-4 mb-4">
                 <select name="bulan" class="border border-gray-300 p-2 rounded-lg">
@@ -53,14 +53,17 @@
                 <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
                     <tr>
                         <th scope="col" class="px-6 py-3">Nama Peminjam</th>
+                        <th scope="col" class="px-6 py-3">Barang Yang Dipinjam</th>
                         <th scope="col" class="px-6 py-3">Tanggal Peminjaman</th>
+                        <th scope="col" class="px-6 py-3">Tanggal Kembali</th>
                         <th scope="col" class="px-6 py-3">Status</th>
+                        <th scope="col" class="px-6 py-3">Kondisi Barang</th>
                     </tr>
                 </thead>
                 <tbody>
                     @if ($listPeminjam->isEmpty())
                         <tr>
-                            <td colspan="3" class="text-center py-4">Tidak ada data peminjaman untuk bulan dan tahun yang dipilih.</td>
+                            <td colspan="5" class="text-center py-4">Tidak ada data peminjaman untuk bulan dan tahun yang dipilih.</td>
                         </tr>
                     @else
                         @foreach ($listPeminjam as $item)
@@ -68,8 +71,14 @@
                                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                                     {{ $item->nama_peminjam }}
                                 </th>
+                                <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+                                    {{ $item->nama_barang }}
+                                </th>
                                 <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->tgl_peminjaman)->format('d M Y') }}</td>
-                                <td class="px-4 py-4 xl:text-xs">
+                                <td class="px-6 py-4">
+                                    {{ $item->tgl_kembali ? \Carbon\Carbon::parse($item->tgl_kembali)->format('d M Y') : '-' }}
+                                </td>
+                                <td class="px-6 py-4">
                                     @if ($item->tgl_kembali)
                                         <div class="flex items-center gap-2">
                                             <svg class="w-5 text-white bg-green-500 rounded-full" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -86,12 +95,21 @@
                                         </div>
                                     @endif
                                 </td>
+                                <td class="px-6 py-4">
+                                    @if ($item->kondisi_barang == 1)
+                                        <span class="text-green-600 font-semibold">Bisa Dipakai</span>
+                                    @else
+                                        <span class="text-red-500 font-semibold">Rusak</span>
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     @endif
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
         
         {{ $listPeminjam->links() }}  {{-- Untuk menampilkan pagination --}}
     </div>

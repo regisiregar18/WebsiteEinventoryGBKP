@@ -28,13 +28,18 @@ class PagesController extends Controller
     {
         // Liat Peminjam
         $listPeminjam = DB::table('barangs')
-            ->join('peminjamen', 'barangs.id', '=', 'peminjamen.id_barang')
-            ->join('peminjams', 'peminjams.id', '=', 'peminjamen.id_peminjam')
-            ->select('peminjams.nama_peminjam', 'peminjamen.tgl_peminjaman', 'peminjamen.tgl_kembali')
-            ->orderBy('peminjamen.tgl_kembali', 'DESC')
-            ->paginate(10);
+    ->join('peminjamen', 'barangs.id', '=', 'peminjamen.id_barang')
+    ->join('peminjams', 'peminjams.id', '=', 'peminjamen.id_peminjam')
+    ->select(
+        'peminjams.nama_peminjam',
+        'peminjamen.tgl_peminjaman',
+        'peminjamen.tgl_kembali',
+        'barangs.kondisi_barang',
+        'barangs.nama_barang' // Tambahkan kolom ini
+    )
+    ->orderBy('peminjamen.tgl_kembali', 'DESC')
+    ->paginate(10);
 
-        
         $bulan = [
             'jan', 'feb', 'mar', 'apr', 'mei', 'jun',
             'jul', 'agu', 'sep', 'okt', 'nov', 'des'

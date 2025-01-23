@@ -17,7 +17,7 @@ class FormBarangPinjam extends Component
 
     public $data, $showSuggest = true;
     public $in_detail = false, $detail;
-    public $nama_peminjam, $barang_pinjaman, $tgl_peminjaman, $id_barang, $tgl_selesai, $no_wa, $bukti_peminjam, $jaminan_peminjam;
+    public $nama_peminjam, $barang_pinjaman, $tgl_peminjaman, $id_barang, $tgl_selesai, $no_wa, $bukti_peminjam, $jaminan_peminjam ,$jumlah_pinjam;
 
     public function mount($detail)
     {
@@ -42,6 +42,7 @@ class FormBarangPinjam extends Component
             'tgl_peminjaman' => 'required|date',
             'tgl_selesai' => 'required|date',
             'no_wa' => 'required|string',
+            'jumlah_pinjam' => 'required|number',
             'bukti_peminjam' => 'image|mimes:png,jpg,jpeg|max:5120',
             'jaminan_peminjam' => 'required|string',
         ]);
@@ -53,6 +54,7 @@ class FormBarangPinjam extends Component
             'tgl_peminjaman' => $this->tgl_peminjaman,
             'tgl_selesai' => $this->tgl_selesai,
             'no_wa' => $this->no_wa,
+            'jumlah_pinjam' => $this->jumlah_pinjam,
             'bukti_peminjam' => $this->bukti_peminjam->store('bukti_peminjam'),
             'jaminan_peminjam' => $this->jaminan_peminjam,
         ]);
@@ -125,8 +127,9 @@ class FormBarangPinjam extends Component
             'tgl_selesai' => 'required|date|after_or_equal:tgl_peminjaman',
             'nama_peminjam' => 'required',
             'no_wa' => 'required',
+            'jumlah_pinjam' => 'required|integer|min:1',
             'jaminan_peminjam' => 'required',
-            'bukti_peminjam' => 'image|mimes:png,jpg,jpeg|max:35840' // Validasi gambar
+            'bukti_peminjam' => 'image|mimes:png,jpg,jpeg|max:35840'
         ]);
 
         $this->bukti_peminjam
@@ -135,6 +138,13 @@ class FormBarangPinjam extends Component
         // Cek status peminjaman barang
         if ($this->cekStatusPinjamBarang($this->id_barang)) {
             return redirect('/dashboard/barang-pinjam')->with('failed', 'Barang masih dipinjam orang lain!');
+        }
+
+        // Ambil data barang yang dipinjam
+        $barang = Barang::find($this->id_barang);
+
+        if ($barang->jumlah_barang < $this->jumlah_pinjam) {
+            return redirect('/dashboard/barang-pinjam')->with('failed', 'Stok barang tidak cukup!');
         }
 
         // Cek peminjam
@@ -146,6 +156,7 @@ class FormBarangPinjam extends Component
                 'id_barang' => $this->id_barang,
                 'tgl_peminjaman' => $this->tgl_peminjaman,
                 'tgl_selesai' => $this->tgl_selesai,
+                'jumlah_pinjam' => $this->jumlah_pinjam,
                 'bukti_peminjam' => $this->bukti_peminjam->hashName(),
                 'jaminan_peminjam' => $this->jaminan_peminjam,
             ]);
@@ -156,6 +167,7 @@ class FormBarangPinjam extends Component
                 'no_wa' => $this->no_wa,
                 'bukti_peminjam' => $this->bukti_peminjam->hashName(),
                 'jaminan_peminjam' => $this->jaminan_peminjam,
+                'jumlah_pinjam' => $this->jumlah_pinjam,
             ]);
 
             Peminjaman::create([
@@ -165,8 +177,12 @@ class FormBarangPinjam extends Component
                 'tgl_selesai' => $this->tgl_selesai,
                 'bukti_peminjam' => $this->bukti_peminjam->hashName(),
                 'jaminan_peminjam' => $this->jaminan_peminjam,
+                'jumlah_pinjam' => $this->jumlah_pinjam,
             ]);
         }
+
+        $barang->jumlah_barang -= $this->jumlah_pinjam;
+        $barang->save(); // Simpan perubahan stok barang
 
         return redirect('/dashboard/barang-pinjam')->with('success', 'Barang berhasil dipinjamkan!');
     } catch (\Exception $e) {
@@ -194,7 +210,8 @@ public function update()
         $peminjam->update([
             'no_wa' => $this->no_wa, // Update no_wa
             //'bukti_peminjam' => $this->bukti_peminjam->hashName(), // Update bukti_peminjam
-            'jaminan_peminjam' => $this->jaminan_peminjam // Update jaminan_peminjam
+            'jaminan_peminjam' => $this->jaminan_peminjam, // Update jaminan_peminjam
+            'jumlah_pinjam' => $this->jumlah_pinjam
         ]);
     } else {
         // Jika tidak ada, maka buat dulu di database
@@ -203,6 +220,7 @@ public function update()
             'no_wa' => $this->no_wa,
             //'bukti_peminjam' => $this->bukti_peminjam->hashName(),
             'jaminan_peminjam' => $this->jaminan_peminjam,
+            'jumlah_pinjam' => $this->jumlah_pinjam
         ]);
     }
 
@@ -212,6 +230,7 @@ public function update()
         'id_barang' => $this->id_barang,
         'tgl_peminjaman' => $this->tgl_peminjaman,
         'tgl_selesai' => $this->tgl_selesai,
+        'jumlah_pinjam' => $this->jumlah_pinjam
     ]);
 
     return redirect('/dashboard/barang-pinjam')->with('success', 'Barang berhasil diupdate!');
